@@ -28,8 +28,8 @@ for wall in walls:
 # model.by_type('IfcWall')[0].Name
 # 'Wand-Int-ERDG-4'
 
-print(dir(model))
-print(dir(model.by_type('IfcWall')[0]))
+# print(dir(model))
+# print(dir(model.by_type('IfcWall')[0]))
 
 wall_type_attributes = [
     'ConnectedFrom', 'ConnectedTo', 'ContainedInStructure', 'Declares', 'Decomposes', 'Description',
@@ -46,3 +46,31 @@ wall_type_attributes = [
     'attribute_name', 'attribute_type', 'compare', 'file', 'get_info', 'get_info_2', 'id', 'is_a',
     'is_entity', 'method_list', 'to_string', 'unwrap_value', 'walk', 'wrap_value'
 ]
+
+wall = model.by_type('IfcWall')[0]
+print("Wall is a IFC Wall: {}".format(wall.is_a('IfcWall'))) # True
+print("Wall is a IFC Element: {}".format(wall.is_a('IfcElement'))) # True
+print("Wall is a IFC Window: {}".format(wall.is_a('IfcWindow'))) # False
+print("Wall id: {}".format(wall.id()))
+print("Wall Name: {}".format(wall.Name))
+print(wall.get_info()) # get all attributes
+
+# Get all properties & quantities of an object
+# import ifcopenshell.util
+# import ifcopenshell.util.element
+# print(ifcopenshell.util.element.get_psets(wall))
+
+# Display elements related to a particular object
+print(wall.IsDefinedBy)
+print(model.get_inverse(wall))
+
+# Modify data and save model as new IFC file
+# wall.Name = 'New-Wall-Name'
+# model.write(os.path.join(current_wd, 'New-Ifc-Model.ifc'))
+
+# Create new IFC model from scratch
+# new_ifc_model = ifcopenshell.file() # optional argument schema='IFC4'
+
+# Create new element (blank attributes) inside of a model
+# new_wall = model.createIfcWall() # option 1
+# new_wall = model.create_entity('IfcWall') # option 2
