@@ -20,3 +20,8 @@ shapely==2.1.2
 six==1.17.0
 typing_extensions==4.15.0
 ```
+
+### Notes
+All default IFC entities can be found inside `entity_to_type_map_4.ifc`
+
+---

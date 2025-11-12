@@ -74,3 +74,19 @@ print(model.get_inverse(wall))
 # Create new element (blank attributes) inside of a model
 # new_wall = model.createIfcWall() # option 1
 # new_wall = model.create_entity('IfcWall') # option 2
+
+# Create new element by unpacking attributes
+# #1=IfcWall('0EI0MSHbX9gg8Fxwar7lL8',$,'Wall Name',$,$,$,$,$,$)
+# data = {
+#     'GlobalId': ifcopenshell.guid.new(),
+#     'Name': 'Wall Name'
+# }
+# model.create_entity('IfcWall', **data)
+
+# Copy an element from one IFC file to another
+# wall = model.by_type('IfcWall')[0]
+# new_model = ifcopenshell.file()
+# new_model.add(wall)
+
+# Remove an element
+# model.remove(wall)
