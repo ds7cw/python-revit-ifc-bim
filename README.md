@@ -22,6 +22,6 @@ typing_extensions==4.15.0
 ```
 
 ### Notes
-All default IFC entities can be found inside `entity_to_type_map_4.ifc`
+All default IFC entities can be found inside `entity_to_type_map_4.json`
 
 ---
