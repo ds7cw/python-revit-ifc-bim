@@ -1,6 +1,16 @@
 import ifcopenshell
 import os
 
+from enum import Enum
+
+
+class IfcElementTypeEnum(Enum):
+    BEAM = 'IfcBeamType'
+    SLAB = 'IfcSlabType'
+    WALL = 'IfcWallType'
+    WINDOW = 'IfcWindowType'
+
+
 # cd into this directory before running the main.py file
 current_wd = os.getcwd()
 # Download IFC model from https://docs.ifcopenshell.org/ifcopenshell-python/hello_world.html
@@ -39,6 +49,21 @@ def print_all_entity_types(ifc_model) -> None:
         print(t)
 
 
+def print_all_types_of_category(ifc_model, element_type: str) -> None:
+    """
+    Print details about every element type of a particular category
+    
+    Parameters:
+    - ifc_model: An IfcOpenShell model object.
+    - element_type: The IFC class name to filter by ('IfcWallType', 'IfcDoorType').
+    """
+    for el in ifc_model.by_type(element_type):
+        print("The {} element is: {}".format(element_type, el))
+        print("The name of the {} is: {}".format(element_type, el.Name))
+
+
 if __name__ == '__main__':
-    iterate_through_all_entities(ifc_model=model)
-    print_all_entity_types(ifc_model=model)
+    # iterate_through_all_entities(ifc_model=model)
+    # print_all_entity_types(ifc_model=model)
+    print_all_types_of_category(
+        ifc_model=model, element_type=IfcElementTypeEnum.WINDOW.value)
