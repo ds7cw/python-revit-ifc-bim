@@ -1,4 +1,5 @@
 import ifcopenshell
+import ifcopenshell.util.element
 import os
 
 from enum import Enum
@@ -9,6 +10,13 @@ class IfcElementTypeEnum(Enum):
     SLAB = 'IfcSlabType'
     WALL = 'IfcWallType'
     WINDOW = 'IfcWindowType'
+
+
+class IfcElementEnum(Enum):
+    BEAM = 'IfcBeam'
+    SLAB = 'IfcSlab'
+    WALL = 'IfcWall'
+    WINDOW = 'IfcWindow'
 
 
 # cd into this directory before running the main.py file
@@ -62,8 +70,30 @@ def print_all_types_of_category(ifc_model, element_type: str) -> None:
         print("The name of the {} is: {}".format(element_type, el.Name))
 
 
+def print_all_instances_of_type(ifc_model, element_type) -> None:
+    """Get and print all occurrences of a type"""
+    for el_type in ifc_model.by_type(element_type):
+        print("{} is: {}".format(element_type, el_type.Name))
+        elements = ifcopenshell.util.element.get_types(el_type)
+        print("There are {} of this type".format(len(elements)))
+        for el in elements:
+            print("The name is", el.Name)
+
+
+def print_type_of_element(ifc_model, instance_description):
+    """Get and print the type of an element"""
+    instance = ifc_model.by_type(instance_description)[0]
+    instance_type = ifcopenshell.util.element.get_type(instance)
+    print("The type of {} is {}".format(
+        instance.Name, instance_type.Name))
+
+
 if __name__ == '__main__':
     # iterate_through_all_entities(ifc_model=model)
     # print_all_entity_types(ifc_model=model)
-    print_all_types_of_category(
+    # print_all_types_of_category(
+    #     ifc_model=model, element_type=IfcElementTypeEnum.WINDOW.value)
+    print_all_instances_of_type(
         ifc_model=model, element_type=IfcElementTypeEnum.WINDOW.value)
+    print_type_of_element(
+        ifc_model=model, instance_description=IfcElementEnum.SLAB.value)
