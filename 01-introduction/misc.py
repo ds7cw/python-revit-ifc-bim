@@ -80,7 +80,7 @@ def print_all_instances_of_type(ifc_model, element_type) -> None:
             print("The name is", el.Name)
 
 
-def print_type_of_element(ifc_model, instance_description):
+def print_type_of_element(ifc_model, instance_description: str) -> None:
     """Get and print the type of an element"""
     instance = ifc_model.by_type(instance_description)[0]
     instance_type = ifcopenshell.util.element.get_type(instance)
@@ -88,12 +88,47 @@ def print_type_of_element(ifc_model, instance_description):
         instance.Name, instance_type.Name))
 
 
+def print_properties_of_element(ifc_model, instance_description: str) -> None:
+    """Get and print the properties & quantities of an entity type"""
+    element = model.by_type(instance_description)[0]
+    element_type = ifcopenshell.util.element.get_type(element)
+    import pdb; pdb.set_trace()
+    # Get all properties and quantities as a dictionary
+    psets = ifcopenshell.util.element.get_psets(element_type)
+    print(psets)
+
+    # Get all properties and quantities of the wall, including inherited type properties
+    psets_plus_inherited = ifcopenshell.util.element.get_psets(element)
+    print(psets_plus_inherited)
+
+    # Get only properties and not quantities
+    print(ifcopenshell.util.element.get_psets(element, psets_only=True))
+
+    # Get only quantities and not properties
+    print(ifcopenshell.util.element.get_psets(element, qtos_only=True))
+
+
+def find_spatial_container_of_element(ifc_model, instance_description: str) -> None:
+    """
+    Find the spatial container of an element
+    Walls are typically located on a storey i.e. Level 1
+    Equipment might be located in spaces, etc
+    """
+    element = model.by_type(instance_description)[0]
+    container = ifcopenshell.util.element.get_container(element)
+    print("The element {} is located on {}".format(element.Name, container.Name))
+
+
 if __name__ == '__main__':
     # iterate_through_all_entities(ifc_model=model)
     # print_all_entity_types(ifc_model=model)
     # print_all_types_of_category(
     #     ifc_model=model, element_type=IfcElementTypeEnum.WINDOW.value)
-    print_all_instances_of_type(
-        ifc_model=model, element_type=IfcElementTypeEnum.WINDOW.value)
-    print_type_of_element(
-        ifc_model=model, instance_description=IfcElementEnum.SLAB.value)
+    # print_all_instances_of_type(
+    #     ifc_model=model, element_type=IfcElementTypeEnum.WINDOW.value)
+    # print_type_of_element(
+    #     ifc_model=model, instance_description=IfcElementEnum.SLAB.value)
+    # print_properties_of_element(
+    #     ifc_model=model, instance_description=IfcElementEnum.WALL.value)
+    find_spatial_container_of_element(
+        ifc_model=model, instance_description=IfcElementEnum.WALL.value)
