@@ -1,5 +1,6 @@
 import ifcopenshell
 import ifcopenshell.util.element
+import ifcopenshell.util.placement
 import os
 
 from enum import Enum
@@ -17,6 +18,7 @@ class IfcElementEnum(Enum):
     SLAB = 'IfcSlab'
     WALL = 'IfcWall'
     WINDOW = 'IfcWindow'
+    STOREY = 'IfcBuildingStorey'
 
 
 # cd into this directory before running the main.py file
@@ -119,6 +121,38 @@ def find_spatial_container_of_element(ifc_model, instance_description: str) -> N
     print("The element {} is located on {}".format(element.Name, container.Name))
 
 
+def find_all_elements_in_container(ifc_model, instance_description: str) -> None:
+    """Find all elements located within a spatial container"""
+    if instance_description != IfcElementEnum.STOREY.value:
+        print("Incorrect instance_description; expected {}, got {}".format(
+            IfcElementEnum.STOREY.value, instance_description))
+        return
+    for storey in ifc_model.by_type(instance_description):
+        elements = ifcopenshell.util.element.get_decomposition(storey)
+        print("There are {} located on storey {}, they are:".format(len(elements), storey.Name))
+        for element in elements:
+            print(element.Name)
+            break # Remove break to print all elements in current container
+
+
+def print_xyz_coordinates_of_element(ifc_model, instance_description: str) -> None:
+    """
+    Prints a 4x4 matrix, including the location and rotation. For example:
+    array([[ 1.00000000e+00,  0.00000000e+00,  0.00000000e+00, 2.00000000e+00],
+        [ 0.00000000e+00,  1.00000000e+00,  0.00000000e+00, 3.00000000e+00],
+        [ 0.00000000e+00,  0.00000000e+00,  1.00000000e+00, 5.00000000e+00],
+        [ 0.00000000e+00,  0.00000000e+00,  0.00000000e+00, 1.00000000e+00]])
+    """
+    wall = ifc_model.by_type(instance_description)[0]
+    import pdb; pdb.set_trace()
+    print("Instance Type: {}, instance Name: {}".format(
+        wall.get_info()['type'], wall.Name))
+    matrix = ifcopenshell.util.placement.get_local_placement(wall.ObjectPlacement)
+    # The last column holds the XYZ values, such as:
+    # array([ 2.00000000e+00,  3.00000000e+00,  5.00000000e+00])
+    print(matrix[:,3][:3])
+
+
 if __name__ == '__main__':
     # iterate_through_all_entities(ifc_model=model)
     # print_all_entity_types(ifc_model=model)
@@ -130,5 +164,9 @@ if __name__ == '__main__':
     #     ifc_model=model, instance_description=IfcElementEnum.SLAB.value)
     # print_properties_of_element(
     #     ifc_model=model, instance_description=IfcElementEnum.WALL.value)
-    find_spatial_container_of_element(
+    # find_spatial_container_of_element(
+    #     ifc_model=model, instance_description=IfcElementEnum.WALL.value)
+    find_all_elements_in_container(
+        ifc_model=model, instance_description=IfcElementEnum.STOREY.value)
+    print_xyz_coordinates_of_element(
         ifc_model=model, instance_description=IfcElementEnum.WALL.value)
