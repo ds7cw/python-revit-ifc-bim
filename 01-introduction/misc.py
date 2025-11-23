@@ -1,6 +1,8 @@
 import ifcopenshell
+import ifcopenshell.util.classification
 import ifcopenshell.util.element
 import ifcopenshell.util.placement
+import ifcopenshell.util.system
 import os
 
 from enum import Enum
@@ -15,6 +17,9 @@ class IfcElementTypeEnum(Enum):
 
 class IfcElementEnum(Enum):
     BEAM = 'IfcBeam'
+    DOOR = 'IfcDoor'
+    PIPE = 'IfcPipeSegment'
+    ROOF = 'IfcRoof'
     SLAB = 'IfcSlab'
     WALL = 'IfcWall'
     WINDOW = 'IfcWindow'
@@ -143,14 +148,48 @@ def print_xyz_coordinates_of_element(ifc_model, instance_description: str) -> No
         [ 0.00000000e+00,  0.00000000e+00,  1.00000000e+00, 5.00000000e+00],
         [ 0.00000000e+00,  0.00000000e+00,  0.00000000e+00, 1.00000000e+00]])
     """
-    wall = ifc_model.by_type(instance_description)[0]
-    import pdb; pdb.set_trace()
+    element = ifc_model.by_type(instance_description)[0]
     print("Instance Type: {}, instance Name: {}".format(
-        wall.get_info()['type'], wall.Name))
-    matrix = ifcopenshell.util.placement.get_local_placement(wall.ObjectPlacement)
+        element.get_info()['type'], element.Name))
+    matrix = ifcopenshell.util.placement.get_local_placement(element.ObjectPlacement)
     # The last column holds the XYZ values, such as:
     # array([ 2.00000000e+00,  3.00000000e+00,  5.00000000e+00])
     print(matrix[:,3][:3])
+
+
+def print_element_classification(ifc_model, instance_description: str) -> None:
+    """Print classification of an element"""
+    element = ifc_model.by_type(instance_description)[0]
+    # Elements may have multiple classification references assigned
+    references = ifcopenshell.util.classification.get_references(element)
+    for reference in references:
+        # A reference code might be Pr_30_59_99_02
+        print("The element has a classification reference of", reference[1])
+        # A system might be Uniclass 2015
+        system = ifcopenshell.util.classification.get_classification(reference)
+        print("This reference is part of the system", system.Name)
+
+
+def print_element_distribution_system(ifc_model) -> None:
+    """
+    Get the distribution system of an element
+    Elements may be assigned to multiple systems simultaneously i.e. electrical, hydraulic;
+    """
+    try:
+        pipe = ifc_model.by_type("IfcPipeSegment")[0]
+    except:
+        print("[-] Model does not contain any 'IfcPipeSegment' instances")
+        return
+    
+    try:
+        systems = ifcopenshell.util.system.get_element_systems(pipe)
+    except:
+        print("[-] Pipe instance is not assigned to any system")
+        return
+
+    for system in systems:
+        # For example, it might be part of a Chilled Water system
+        print("This pipe is part of the system", system.Name)
 
 
 if __name__ == '__main__':
@@ -170,3 +209,5 @@ if __name__ == '__main__':
         ifc_model=model, instance_description=IfcElementEnum.STOREY.value)
     print_xyz_coordinates_of_element(
         ifc_model=model, instance_description=IfcElementEnum.WALL.value)
+    print_element_classification(
+        ifc_model=model, instance_description=IfcElementEnum.DOOR.value)
