@@ -61,5 +61,48 @@ def set_obj_placement(ifc_file, ifc_entity) -> None:
     ifcopenshell.api.geometry.edit_object_placement(ifc_file, product=wall, matrix=matrix, is_si=True)
 
 
+def representation_context_example(ifc_model) -> None:
+    """
+    As an object may have multiple Representations, we need to use
+    Representation Contexts to distinguish the purpose and intended context of each Representation.
+    """
+    import ifcopenshell.api.context
+    # If we plan to store 3D geometry in our IFC model, we have to setup a "Model" context.
+    model3d = ifcopenshell.api.context.add_context(ifc_model, context_type="Model")
+
+    # And/Or, if we plan to store 2D geometry, we need a "Plan" context
+    plan = ifcopenshell.api.context.add_context(ifc_model, context_type="Plan")
+
+    # Set up the subcontexts with each of the geometric "purposes" we plan to store in our model.
+    # "Body" is by far the most important and common context, as most IFC models are assumed to be viewable in 3D.
+    body = ifcopenshell.api.context.add_context(ifc_model,
+        context_type="Model", context_identifier="Body", target_view="MODEL_VIEW", parent=model3d)
+
+    # The 3D Axis subcontext is important if any "axis-based" parametric geometry is going to be created.
+    # A beam, or column may be drawn using a single 3D axis line, and for this we need an Axis subcontext.
+    ifcopenshell.api.context.add_context(ifc_model,
+        context_type="Model", context_identifier="Axis", target_view="GRAPH_VIEW", parent=model3d)
+
+    # It's also important to have a 2D Axis subcontext for things like walls and claddings
+    # which can be drawn using a 2D axis line.
+    ifcopenshell.api.context.add_context(ifc_model,
+        context_type="Plan", context_identifier="Axis", target_view="GRAPH_VIEW", parent=plan)
+
+    # The 3D Box subcontext is useful for clash detection or shape analysis, or even lazy-loading of large models.
+    ifcopenshell.api.context.add_context(ifc_model,
+        context_type="Model", context_identifier="Box", target_view="MODEL_VIEW", parent=model3d)
+
+    # A 2D annotation subcontext for plan views are important for door swings, window cuts, and symbols 
+    # for equipment like GPOs, fire extinguishers, and so on.
+    ifcopenshell.api.context.add_context(ifc_model,
+        context_type="Plan", context_identifier="Annotation", target_view="PLAN_VIEW", parent=plan)
+
+    # You may also create 2D annotation subcontexts for sections and elevation views.
+    ifcopenshell.api.context.add_context(ifc_model,
+        context_type="Plan", context_identifier="Annotation", target_view="SECTION_VIEW", parent=plan)
+    ifcopenshell.api.context.add_context(ifc_model,
+        context_type="Plan", context_identifier="Annotation", target_view="ELEVATION_VIEW", parent=plan)
+
+
 if __name__ == '__main__':
     set_project_units(ifc_file=model, unit_type='LENGTHUNIT', prefix='MILLI')
