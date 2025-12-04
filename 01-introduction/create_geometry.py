@@ -104,5 +104,44 @@ def representation_context_example(ifc_model) -> None:
         context_type="Plan", context_identifier="Annotation", target_view="ELEVATION_VIEW", parent=plan)
 
 
+def create_representation() -> None:
+    """
+    Each Representations must choose a geometry modeling technique.
+    For example, you may specify a mesh-like geometry, which uses vertices, edges, and faces.
+    Alternatively, you may specify 2D profiles extruded into solid shapes & potentially having boolean voids & subtractions.
+    You may even specify single edges and linework without any surfaces or solids.
+    Representations may even be single points, such as for survey points or structual point connections.
+    After the Representation is created, you will need to assign the Representation to the IFC object (e.g. wall, door, slab, etc).
+    """
+    import ifcopenshell.api.root
+    import ifcopenshell.api.unit
+    import ifcopenshell.api.context
+    import ifcopenshell.api.project
+    import ifcopenshell.api.geometry
+
+    # Create a new project using millimeters with a single furniture element at the origin
+    model = ifcopenshell.api.project.create_file
+    ifcopenshell.api.root.create_entity(model, ifc_class="IfcProject")
+    ifcopenshell.api.unit.assign_unit(model)
+
+    # We want the representation to be the 3D body of the element.
+    # This representation context is only created once per project.
+    # You must reuse the same body context every time you create a new representation.
+    model3d = ifcopenshell.api.context.add_context(model, context_type="Model")
+    body = ifcopenshell.api.context.add_context(model,
+        context_type="Model", context_identifier="Body", target_view="MODEL_VIEW", parent=model3d)
+
+    # Create element with an object placement
+    element = ifcopenshell.api.root.create_entity(model, ifc_class="IfcFurniture")
+    ifcopenshell.api.geometry.edit_object_placement(model, product=element)
+
+    # Create A wall-like representation, 5 meters long, 3 meters high, and 200mm thick
+    representation = ifcopenshell.api.geometry.add_wall_representation(model,
+        context=body, length=5, height=3, thickness=0.2)
+
+    # Assign the new body representation back to the element
+    ifcopenshell.api.geometry.assign_representation(model, product=element, representation=representation)
+
+
 if __name__ == '__main__':
     set_project_units(ifc_file=model, unit_type='LENGTHUNIT', prefix='MILLI')
