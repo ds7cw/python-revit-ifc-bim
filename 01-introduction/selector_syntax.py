@@ -27,6 +27,14 @@ def print_concrete_elements_of_categories(ifc_file, *categories, material) -> No
     [print(el) for el in asd]
 
 
+def print_name_attribute_of_entity(ifc_file, entity_type):
+    """Get the Name attribute of the entity's type"""
+    wall = ifc_file.by_type(entity_type)[0]
+    name_attr = ifcopenshell.util.selector.get_element_value(wall, 'type.Name')
+    print('Name attribute: {}'.format(name_attr))
+
+
 if __name__ == '__main__':
     print_concrete_elements_of_categories(
         model, IfcElementEnum.DOOR.value, IfcElementEnum.WINDOW.value, material='Holz')
+    print_name_attribute_of_entity(model, IfcElementEnum.SLAB.value)
