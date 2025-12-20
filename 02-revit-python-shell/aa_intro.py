@@ -60,3 +60,38 @@ col_selection = FilteredElementCollector(doc, active_view.Id). \
 
 # SetElementIds selects the elements
 user_selection = uidoc.Selection.SetElementIds(col_selection) # elements in Revit will be selected
+
+### Transactions - context-like objects that guard any changes made to a Revit model
+t = Transaction(doc)
+t.Start('Apply Level code to room parameter') # this string is for information
+
+# Assume there is a user defined Revit parameter 'MT_RoomLevel'
+# Assume Room Level parameter follows the convention 'Level 00'
+for room in col_rooms:
+    # The below needs to be put inside of a transaction, otherwise an exception will be thrown
+    room.LookupParameter('MT_RoomLevel').Set(room.Level.Name[6:])
+
+t.Commit()
+
+### pyRevit
+# Create a user input list
+from pyrevit.forms import SelectFormList
+
+items = ['item1', 'item2', 'item3']
+SelectFormList.show(items, button_name='Select Item')
+
+### Deleting Elements
+# Autodesk.Revit.DB.ViewSheet object
+col_sheets = FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Sheets). \
+    WhereElementIsNotElementType().ToElements() 
+
+t = Transaction(doc)
+t.Start('Delete Sheets')
+
+for sheet in col_sheets:
+    if sheet.SheetNumber != 'XX':
+        for view in sheet.GetAllPlacedViews():
+            doc.Delete(view) # ONLY if you want to delete the associated views!!!
+        doc.Delete(sheet.Id)
+
+t.Commit()
