@@ -95,3 +95,41 @@ for sheet in col_sheets:
         doc.Delete(sheet.Id)
 
 t.Commit()
+
+### Get Element Type & Family Names
+# Assuming one Window and one Wall are selected in the Revit session
+selection_2 = uidoc.Selection.GetElementsIds()
+
+for id in selection_2:
+    # Autodesk.Revit.DB.FamilyInstance object
+    # Autodesk.Revit.DB.Wall object
+    element = doc.GetElement(id)
+    type_id = element.GetTypeId()
+    print("Category - {}".format(element.Category.Name))
+    # >>> Category - Windows
+    # >>> Category - Walls
+    print("Type - {}".format(doc.GetElement(type_id)))
+    # >>> Type - Autodesk.Revit.DB.FamilySymbol object at ...
+    # >>> Type - Autodesk.Revit.DB.WallType object at ...
+    print("Type - {}".format(
+        doc.GetElement(type_id).get_Parameter(BuiltInParameter.SYMBOL_NAME_PARAM).AsString()))
+    # >>> Type - 4000W x 1150H mm
+    # >>> Type - Ext_EW1_Render-Brick-Insl-Block-Render
+    print("Family - {}".format(
+        doc.GetElement(type_id).get_Parameter(BuiltInParameter.SYMBOL_FAMILY_NAME_PARAM).AsString()))
+    # >>> Family - Windows_Concept_Plain_Sgl
+    # >>> Family - Basic Wall
+
+col_wall_types = FilteredElementCollector(doc).OfClass(WallType)
+type_names = [x.get_Parameter(BuiltInParameter.SYMBOL_NAME_PARAM).AsString() for x in col_wall_types]
+family_names = [x.get_Parameter(BuiltInParameter.SYMBOL_FAMILY_NAME_PARAM).AsString() for x in col_wall_types]
+
+for type_name in type_names:
+    print(type_name)
+    # >>> Curtain Wall
+    # >>> Exterior - Brick on Mtl. Stud
+
+for family_name in family_names:
+    print(family_name)
+    # >>> Curtain Wall
+    # >>> Basic Wall
